@@ -1,11 +1,10 @@
 using Core.Common;
 using Core.Entities;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Data;
 
-public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext<User>(options)
+public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
 {
     public DbSet<Book> Books => Set<Book>();
     public DbSet<Genre> Genres => Set<Genre>();
@@ -15,18 +14,12 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        base.OnModelCreating(modelBuilder);
-        
         modelBuilder.Entity<Review>()
             .Property(r => r.Status)
             .HasConversion<string>();
         
         modelBuilder.Entity<ReviewReport>()
             .Property(rr => rr.Status)
-            .HasConversion<string>();
-        
-        modelBuilder.Entity<User>()
-            .Property(u => u.Status)
             .HasConversion<string>();
 
         modelBuilder.Entity<BookGenre>()
@@ -49,8 +42,9 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
         modelBuilder.Entity<Review>()
             .HasOne(r => r.User)
-            .WithMany(u => u.Reviews)
-            .HasForeignKey(r => r.UserId);
+            .WithMany()
+            .HasForeignKey(r => r.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<ReviewReport>()
             .HasOne(rr => rr.Review)
@@ -80,12 +74,13 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         modelBuilder.Entity<Genre>().Property<DateTime>("CreatedAt").HasDefaultValueSql("GETUTCDATE()");
         modelBuilder.Entity<Review>().Property<DateTime>("CreatedAt").HasDefaultValueSql("GETUTCDATE()");
         modelBuilder.Entity<ReviewReport>().Property<DateTime>("CreatedAt").HasDefaultValueSql("GETUTCDATE()");
+        modelBuilder.Entity<BookGenre>().Property<DateTime>("CreatedAt").HasDefaultValueSql("GETUTCDATE()");
     }
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         var entries = ChangeTracker.Entries()
-            .Where(e => e.Entity is BaseEntity && 
+            .Where(e => e.Entity is BaseEntity &&
                 (e.State == EntityState.Added || e.State == EntityState.Modified));
 
         foreach (var entityEntry in entries)

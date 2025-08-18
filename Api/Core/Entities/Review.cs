@@ -10,7 +10,7 @@ public class Review : BaseAuditableEntity
     public string Content { get; set; } = null!;
     public ReviewStatus Status { get; set; } = ReviewStatus.Pending;
     
-    public int BookId { get; set; }
+    public string BookId { get; set; } = null!;
     public string UserId { get; set; } = null!;
     
     public Book Book { get; set; } = null!;

@@ -8,12 +8,10 @@ namespace Infrastructure.Data;
 
 public static class DbInitializer
 {
-    public static async Task SeedData(
-        ApplicationDbContext context,
-        UserManager<User> userManager,
-        RoleManager<IdentityRole> roleManager)
+
+    public static async Task SeedData(ApplicationDbContext appContext, UserManager<User> userManager, RoleManager<IdentityRole<string>> roleManager)
     {
-        if (await context.Books.AnyAsync()) return;
+        if (await appContext.Books.AnyAsync()) return;
 
         var roles = new[] { "Admin", "User", "Moderator" };
         foreach (var role in roles)
@@ -38,30 +36,35 @@ public static class DbInitializer
 
         var genres = new[]
         {
-            new Genre { Name = "Science Fiction" },
-            new Genre { Name = "Fantasy" },
-            new Genre { Name = "Mystery" },
-            new Genre { Name = "Thriller" },
-            new Genre { Name = "Biography" }
+            new Genre { Name = "Science Fiction", Id = "sci-fi" },
+            new Genre { Name = "Fantasy", Id = "fantasy" },
+            new Genre { Name = "Mystery", Id = "mystery" },
+            new Genre { Name = "Thriller", Id = "thriller" },
+            new Genre { Name = "Biography", Id = "biography" },
+            new Genre { Name = "Non-Fiction", Id = "non-fiction" },
+            new Genre { Name = "Romance", Id = "romance" },
+            new Genre { Name = "Horror", Id = "horror" }
         };
-        await context.Genres.AddRangeAsync(genres);
+        await appContext.Genres.AddRangeAsync(genres);
 
         var books = new[]
         {
             new Book
             {
+                Id = "dune_frank-herbert",
                 Title = "Dune",
                 Author = "Frank Herbert",
                 ISBN = "9780441172719",
                 PublicationYear = 1965,
                 Description = "A science fiction masterpiece",
-                BookGenres = new List<BookGenre>
-                {
+                BookGenres =
+                [
                     new() { Genre = genres[0] }
-                }
+                ]
             },
             new Book
             {
+                Id = "hobbit_jrr-tolkien",
                 Title = "The Hobbit",
                 Author = "J.R.R. Tolkien",
                 ISBN = "9780547928227",
@@ -73,7 +76,7 @@ public static class DbInitializer
                 ]
             }
         };
-        await context.Books.AddRangeAsync(books);
+        await appContext.Books.AddRangeAsync(books);
 
         var reviews = new[]
         {
@@ -94,8 +97,8 @@ public static class DbInitializer
                 Status = ReviewStatus.Approved
             }
         };
-        await context.Reviews.AddRangeAsync(reviews);
+        await appContext.Reviews.AddRangeAsync(reviews);
 
-        await context.SaveChangesAsync();
+        await appContext.SaveChangesAsync();
     }
 }

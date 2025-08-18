@@ -9,7 +9,7 @@ public class ReviewReport: BaseEntity
     public string Reason { get; set; } = null!;
     public ReportStatus Status { get; set; } = ReportStatus.Pending;
     
-    public int ReviewId { get; set; }
+    public string ReviewId { get; set; } = null!;
     public string ReportedByUserId { get; set; } = null!;
     
     public Review Review { get; set; } = null!;
