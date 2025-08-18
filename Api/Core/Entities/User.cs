@@ -10,6 +10,7 @@ public class User : IdentityUser
     public DateTime MemberSince { get; set; } = DateTime.UtcNow;
     public UserStatus Status { get; set; } = UserStatus.Active;
 
-    public ICollection<Review> Reviews { get; set; } = new List<Review>();
+    public ICollection<Review> Reviews { get; set; } = [];
+    public ICollection<ReviewReport> ReviewReports { get; set; } = [];
     public virtual ICollection<IdentityUserRole<string>> UserRoles { get; } = new List<IdentityUserRole<string>>();
 }
