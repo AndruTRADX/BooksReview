@@ -1,4 +1,3 @@
-// Api/Program.cs
 using API.Middleware;
 using Application.Books.Validators;
 using Application.Core;
