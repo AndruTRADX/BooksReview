@@ -25,7 +25,7 @@ public class CreateBook
 
             var result = await context.SaveChangesAsync(cancellationToken) > 0;
 
-            if (!result) return Result<string>.Failure("Failed to create the activity", 400);
+            if (!result) return Result<string>.Failure("Failed to create the book", 400);
 
             return Result<string>.Success(book.Id);
         }
