@@ -15,5 +15,5 @@ public class Review : BaseAuditableEntity
     
     public Book Book { get; set; } = null!;
     public User User { get; set; } = null!;
-    public ICollection<ReviewReport> Reports { get; set; } = new List<ReviewReport>();
+    public ICollection<ReviewReport> Reports { get; set; } = [];
 }

@@ -1,9 +1,8 @@
 using System;
-using Core.Common;
 
-namespace Core.Entities;
+namespace Application.DTOs;
 
-public class Book : BaseAuditableEntity
+public class CreateBookDTO
 {
     public string Title { get; set; } = null!;
     public string Author { get; set; } = null!;
@@ -11,6 +10,5 @@ public class Book : BaseAuditableEntity
     public int PublicationYear { get; set; }
     public string? CoverImageUrl { get; set; }
     public string? Description { get; set; }
-    public ICollection<Review> Reviews { get; set; } = [];
-    public ICollection<BookGenre> BookGenres { get; set; } = [];
+    public List<string> GenreIds { get; set; } = [];
 }

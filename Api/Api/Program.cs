@@ -1,5 +1,9 @@
 // Api/Program.cs
+using API.Middleware;
+using Application.Books.Validators;
+using Application.Core;
 using Core.Entities;
+using FluentValidation;
 using Infrastructure.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -24,7 +28,14 @@ builder.Services.AddIdentity<User, IdentityRole<string>>(options => {
 .AddEntityFrameworkStores<AuthDbContext>()
 .AddDefaultTokenProviders();
 
+builder.Services.AddCors();
+
+builder.Services.AddTransient<ExceptionMiddleware>();
+builder.Services.AddAutoMapper(typeof(MappingProfiles).Assembly);
+builder.Services.AddValidatorsFromAssemblyContaining<CreateBookValidator>();
+
 builder.Services.AddAuthorization();
+builder.Services.AddAuthentication();
 
 var app = builder.Build();
 
@@ -35,6 +46,7 @@ var app = builder.Build();
 //     app.UseSwaggerUI();
 // }
 
+app.UseMiddleware<ExceptionMiddleware>();
 app.UseCors(options => options.AllowAnyHeader().AllowAnyMethod()
     .WithOrigins("http://localhost:3000", "https://localhost:3000"));
 
@@ -46,17 +58,18 @@ app.MapControllers();
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
+    
     try
     {
         var authContext = services.GetRequiredService<AuthDbContext>();
-        authContext.Database.Migrate();
-        
+        await authContext.Database.MigrateAsync();
+
         var appContext = services.GetRequiredService<ApplicationDbContext>();
-        appContext.Database.Migrate();
-        
+        await appContext.Database.MigrateAsync();
+
         var userManager = services.GetRequiredService<UserManager<User>>();
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole<string>>>();
-        
+
         await DbInitializer.SeedData(appContext, userManager, roleManager);
     }
     catch (Exception ex)
