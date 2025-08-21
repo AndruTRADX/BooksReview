@@ -28,7 +28,7 @@ public class CreateBook
             
             if (bookExists)
             {
-                return Result<string>.Failure("There is already a book with the same title, author and ISBN", (int)HttpStatusCode.Conflict);
+                return Result<string>.Failure("There is already a book with the same title, author and ISBN", 409);
             }
 
             string generatedId = generateIdStrategy.GenerateId(book);

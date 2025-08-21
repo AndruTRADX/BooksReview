@@ -1,6 +1,9 @@
 using API.Middleware;
+using Application.Books.Commands;
 using Application.Books.Validators;
 using Application.Core;
+using Application.Strategies.GenerateId;
+using Application.Utils;
 using Core.Entities;
 using FluentValidation;
 using Infrastructure.Data;
@@ -11,7 +14,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-// builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<AuthDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -19,7 +21,8 @@ builder.Services.AddDbContext<AuthDbContext>(options =>
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddIdentity<User, IdentityRole<string>>(options => {
+builder.Services.AddIdentity<User, IdentityRole<string>>(options =>
+{
     options.User.RequireUniqueEmail = true;
     options.Password.RequireDigit = true;
     options.Password.RequiredLength = 8;
@@ -27,7 +30,17 @@ builder.Services.AddIdentity<User, IdentityRole<string>>(options => {
 .AddEntityFrameworkStores<AuthDbContext>()
 .AddDefaultTokenProviders();
 
+// Implementation of the Interfaces in the Application layer
+// If I add a new interface, I need to add it here as well
+builder.Services.AddScoped<IGenerateIdStrategy<Book>, GenerateBookIdStrategy>();
+builder.Services.AddScoped<ITextNormalizer, TextNormalizer>();
+
 builder.Services.AddCors();
+builder.Services.AddMediatR(x =>
+{
+    x.RegisterServicesFromAssemblyContaining<CreateBook.Handler>();
+    x.AddOpenBehavior(typeof(ValidationBehavior<,>));
+});
 
 builder.Services.AddTransient<ExceptionMiddleware>();
 builder.Services.AddAutoMapper(typeof(MappingProfiles).Assembly);
@@ -38,17 +51,9 @@ builder.Services.AddAuthentication();
 
 var app = builder.Build();
 
-// Middleware pipeline
-// if (app.Environment.IsDevelopment())
-// {
-//     app.UseSwagger();
-//     app.UseSwaggerUI();
-// }
-
 app.UseMiddleware<ExceptionMiddleware>();
 app.UseCors(options => options.AllowAnyHeader().AllowAnyMethod()
     .WithOrigins("http://localhost:3000", "https://localhost:3000"));
-
 app.UseAuthentication();
 app.UseAuthorization();
 
